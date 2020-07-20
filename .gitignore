@@ -41,9 +41,11 @@ bin/
 # SpringBoot Config #
 **/application-*.yml
 !**/application-local.yml
+!**/application-unittest.yml
 
 **/application-*.properties
 !**/application-local.properties
+!**/application-unittest.properties
 
 # Mac #
 .DS_Store
