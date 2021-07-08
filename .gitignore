@@ -40,11 +40,11 @@ bin/
 
 # SpringBoot Config #
 **/application-*.yml
-!**/application-local.yml
+!**/application-dev.yml
 !**/application-unittest.yml
 
 **/application-*.properties
-!**/application-local.properties
+!**/application-dev.properties
 !**/application-unittest.properties
 
 # Mac #
