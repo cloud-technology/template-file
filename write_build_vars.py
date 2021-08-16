@@ -26,3 +26,8 @@ f.writelines("#!/bin/bash\n")
 f.writelines("export BUILD_IMAGE_NAME=" + CI_PROJECT_NAME + "\n")
 f.writelines("export BUILD_IMAGE_TAG=" + BUILD_IMAGE_TAG + "\n")
 f.close()
+
+build_env = open('build_vars.env', 'w')
+build_env.writelines("BUILD_IMAGE_NAME=" + CI_PROJECT_NAME + "\n")
+build_env.writelines("BUILD_IMAGE_TAG=" + BUILD_IMAGE_TAG + "\n")
+build_env.close()
