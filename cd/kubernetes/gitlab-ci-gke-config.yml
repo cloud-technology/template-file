@@ -1,0 +1,47 @@
+stages:
+  - deploy
+
+variables:
+  CONFIG_DEPLOY_ENABLED: "true"
+
+.job_deploy_config_template:
+  stage: deploy
+  image: google/cloud-sdk:329.0.0-alpine
+  variables:
+    GCP_PROJECT_ID: ""
+    GCP_SERVICE_ACCOUNT: ""
+    GCP_CREDENTIALS_PEM: ""
+    GCP_CLUSTER_NAME: ""
+    GKE_REGION: ""
+    GKE_NAMESPACE: ""
+    # ConfigMap name
+    DEPLOY_APP_NAME: ""
+    # Spring
+    SPRING_PROFILES_ACTIVE: ""
+  script:
+    # - set -x
+    # slim 用
+    # - apt-get install gettext-base 
+    # install kubectl
+    - curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+    - install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+    # gcloud auth
+    - echo "$GCP_CREDENTIALS_PEM" > "$(pwd)/credentials.json"
+    - gcloud auth activate-service-account ${GCP_SERVICE_ACCOUNT} --key-file=./credentials.json
+    - gcloud container clusters get-credentials ${GCP_CLUSTER_NAME} --region ${GKE_REGION} --project ${GCP_PROJECT_ID}
+    # kubectl
+    # - kubectl version --client
+    - kubectl version --v=7
+    # alpine 用
+    - apk add gettext
+    # 先處理 SpringBoot 設定檔
+    - cat template/springconfig_template.yml | envsubst > config-spring.yml
+    # 取出設定檔內容 並插入4個空白配合 yml 縮排
+    - export CONFIG_CONTEXT=$(sed -e "s/^/    /g" config-spring.yml)
+    # 將環境變數渲染到檔案
+    - cat template/configMap_template.yml | envsubst > configMap-deployment.yml
+    - kubectl apply -f configMap-deployment.yml --namespace=${GKE_NAMESPACE}
+  rules:
+    - if: $CONFIG_DEPLOY_ENABLED == "true"
+    - changes:
+      - template/springconfig_template.yml
